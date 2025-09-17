@@ -1,0 +1,181 @@
+<!-- src/app/pages/contact/contact.component.html -->
+<div class="contact-container">
+
+  <!-- Hero section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Contáctanos</h1>
+      <p>Estamos aquí para ayudarte. Envíanos un mensaje y te responderemos pronto.</p>
+    </div>
+  </section>
+
+  <!-- Contact methods -->
+  <section class="contact-methods-section">
+    <div class="container">
+      <h2>Formas de Contacto</h2>
+      <div class="contact-methods-grid">
+        <div class="contact-method" *ngFor="let method of contactMethods">
+          <div class="method-icon">{{ method.icon }}</div>
+          <h3>{{ method.title }}</h3>
+          <p class="method-info">{{ method.info }}</p>
+          <p class="method-description">{{ method.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact form -->
+  <section class="contact-form-section">
+    <div class="container">
+      <div class="form-wrapper">
+        <div class="form-content">
+          <h2>Envíanos un Mensaje</h2>
+          <p>Completa el formulario y nos pondremos en contacto contigo.</p>
+
+          <form (ngSubmit)="onSubmit()" class="contact-form">
+
+            <!-- Name and Email row -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="name">Nombre Completo *</label>
+                <input
+                  type="text"
+                  id="name"
+                  [(ngModel)]="contactForm.name"
+                  name="name"
+                  class="form-input"
+                  placeholder="Tu nombre completo"
+                  required>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  [(ngModel)]="contactForm.email"
+                  name="email"
+                  class="form-input"
+                  placeholder="tu@email.com"
+                  required>
+              </div>
+            </div>
+
+            <!-- Subject -->
+            <div class="form-group">
+              <label for="subject">Asunto *</label>
+              <select
+                id="subject"
+                [(ngModel)]="contactForm.subject"
+                name="subject"
+                class="form-input"
+                required>
+                <option value="">Selecciona un asunto</option>
+                <option *ngFor="let dept of departments" [value]="dept">
+                  {{ dept }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Message -->
+            <div class="form-group">
+              <label for="message">Mensaje *</label>
+              <textarea
+                id="message"
+                [(ngModel)]="contactForm.message"
+                name="message"
+                class="form-textarea"
+                placeholder="Describe tu consulta o mensaje..."
+                rows="6"
+                required></textarea>
+            </div>
+
+            <!-- Submit message -->
+            <div class="submit-message" *ngIf="submitMessage"
+                 [class.success]="submitMessage.includes('correctamente')"
+                 [class.error]="!submitMessage.includes('correctamente')">
+              {{ submitMessage }}
+            </div>
+
+            <!-- Submit button -->
+            <button
+              type="submit"
+              class="submit-btn"
+              [disabled]="isSubmitting">
+              <span *ngIf="!isSubmitting">Enviar Mensaje</span>
+              <span *ngIf="isSubmitting">Enviando...</span>
+            </button>
+
+          </form>
+        </div>
+
+        <!-- Contact info sidebar -->
+        <div class="contact-sidebar">
+          <h3>Información Adicional</h3>
+
+          <div class="info-section">
+            <h4>Horarios de Atención</h4>
+            <ul>
+              <li>Lunes a Viernes: 9:00 - 18:00</li>
+              <li>Sábados: 9:00 - 13:00</li>
+              <li>Domingos: Cerrado</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <h4>Tiempo de Respuesta</h4>
+            <ul>
+              <li>Email: 24 horas</li>
+              <li>Chat: Inmediato</li>
+              <li>Teléfono: Inmediato</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <h4>Redes Sociales</h4>
+            <div class="social-links">
+              <a href="#" class="social-link">Facebook</a>
+              <a href="#" class="social-link">Instagram</a>
+              <a href="#" class="social-link">Twitter</a>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h4>Centro de Ayuda</h4>
+            <p>
+              Visita nuestro
+              <a href="/help" class="help-link">Centro de Ayuda</a>
+              para encontrar respuestas a preguntas frecuentes.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ preview -->
+  <section class="faq-preview-section">
+    <div class="container">
+      <h2>Preguntas Frecuentes</h2>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>¿Cuáles son los métodos de pago?</h4>
+          <p>Aceptamos tarjetas de crédito, débito, transferencias bancarias y efectivo.</p>
+        </div>
+        <div class="faq-item">
+          <h4>¿Hacen envíos a todo el país?</h4>
+          <p>Sí, realizamos envíos a todas las provincias de Argentina.</p>
+        </div>
+        <div class="faq-item">
+          <h4>¿Cuál es la política de devoluciones?</h4>
+          <p>Tienes 30 días para devolver productos en perfecto estado.</p>
+        </div>
+        <div class="faq-item">
+          <h4>¿Cómo puedo rastrear mi pedido?</h4>
+          <p>Te enviamos un código de seguimiento por email una vez despachado.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

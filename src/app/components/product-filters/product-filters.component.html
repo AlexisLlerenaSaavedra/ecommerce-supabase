@@ -1,0 +1,75 @@
+<!-- src/app/components/product-filters/product-filters.component.html -->
+<div class="filters-container">
+
+  <!-- Barra de búsqueda -->
+  <div class="search-section">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Buscar productos..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearchChange()"
+        class="search-input">
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-section">
+
+    <!-- Categorías -->
+    <div class="filter-group">
+      <label class="filter-label">Categoría:</label>
+      <select
+        [(ngModel)]="selectedCategory"
+        (change)="onCategoryChange()"
+        class="filter-select">
+        <option [value]="null">Todas las categorías</option>
+        <option *ngFor="let category of categories" [value]="category.id">
+          {{ category.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Rango de precios -->
+    <div class="filter-group">
+      <label class="filter-label">Precio:</label>
+      <div class="price-inputs">
+        <input
+          type="number"
+          placeholder="Min"
+          [(ngModel)]="minPrice"
+          (input)="onPriceChange()"
+          class="price-input">
+        <span class="price-separator">-</span>
+        <input
+          type="number"
+          placeholder="Max"
+          [(ngModel)]="maxPrice"
+          (input)="onPriceChange()"
+          class="price-input">
+      </div>
+    </div>
+
+    <!-- Ordenamiento -->
+    <div class="filter-group">
+      <label class="filter-label">Ordenar por:</label>
+      <select
+        [(ngModel)]="sortBy"
+        (change)="onSortChange()"
+        class="filter-select">
+        <option value="name">Nombre (A-Z)</option>
+        <option value="price-asc">Precio (menor a mayor)</option>
+        <option value="price-desc">Precio (mayor a menor)</option>
+      </select>
+    </div>
+
+    <!-- Botón limpiar -->
+    <div class="filter-group">
+      <button (click)="clearFilters()" class="clear-filters-btn">
+        Limpiar filtros
+      </button>
+    </div>
+
+  </div>
+</div>

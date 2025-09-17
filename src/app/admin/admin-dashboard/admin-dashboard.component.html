@@ -1,0 +1,147 @@
+<!-- src/app/admin/admin-dashboard/admin-dashboard.component.html -->
+<div class="admin-dashboard">
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1>Panel de Administración</h1>
+        <p>Bienvenido, {{ currentUser?.firstName || currentUser?.email }}</p>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-outline" (click)="router.navigate(['/productos'])">
+          Ver Tienda
+        </button>
+        <button class="btn btn-danger" (click)="logout()">
+          Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <p>Cargando dashboard...</p>
+  </div>
+
+  <!-- Dashboard content -->
+  <div class="dashboard-content" *ngIf="!isLoading">
+
+    <!-- Stats cards -->
+    <section class="stats-section">
+      <h2>Resumen General</h2>
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-content">
+            <h3>{{ stats.totalProducts }}</h3>
+            <p>Total Productos</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-content">
+            <h3>{{ stats.totalCategories }}</h3>
+            <p>Categorías</p>
+          </div>
+        </div>
+
+        <div class="stat-card" [class.warning]="stats.lowStockCount > 0">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-content">
+            <h3>{{ stats.lowStockCount }}</h3>
+            <p>Bajo Stock</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <h3>${{ stats.totalInventoryValue.toFixed(0) }}</h3>
+            <p>Valor Inventario</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Quick actions -->
+    <section class="actions-section">
+      <h2>Acciones Rápidas</h2>
+      <div class="actions-grid">
+
+        <div class="action-card" (click)="navigateToProducts()">
+          <div class="action-icon">📝</div>
+          <h3>Gestionar Productos</h3>
+          <p>Crear, editar y eliminar productos</p>
+          <button class="action-btn">Ir a Productos</button>
+        </div>
+
+        <div class="action-card" (click)="navigateToCategories()">
+          <div class="action-icon">🗂️</div>
+          <h3>Gestionar Categorías</h3>
+          <p>Organizar productos por categorías</p>
+          <button class="action-btn">Ir a Categorías</button>
+        </div>
+
+        <div class="action-card" (click)="navigateToOrders()">
+          <div class="action-icon">📋</div>
+          <h3>Ver Órdenes</h3>
+          <p>Gestionar pedidos de clientes</p>
+          <button class="action-btn disabled">Próximamente</button>
+        </div>
+
+        <div class="action-card" (click)="navigateToUsers()">
+          <div class="action-icon">👥</div>
+          <h3>Gestionar Usuarios</h3>
+          <p>Administrar cuentas de clientes</p>
+          <button class="action-btn disabled">Próximamente</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Low stock alert -->
+    <section class="alerts-section" *ngIf="lowStockProducts.length > 0">
+      <h2>Alertas de Stock</h2>
+      <div class="alert-card warning">
+        <div class="alert-header">
+          <h3>⚠️ Productos con Bajo Stock</h3>
+          <p>Los siguientes productos necesitan reposición:</p>
+        </div>
+        <div class="low-stock-list">
+          <div class="low-stock-item" *ngFor="let product of lowStockProducts">
+            <img [src]="product.image_url" [alt]="product.name" class="product-thumb">
+            <div class="product-info">
+              <h4>{{ product.name }}</h4>
+              <p class="stock-level" [class.critical]="product.stock <= 2">
+                Stock: {{ product.stock }} unidades
+              </p>
+            </div>
+            <div class="product-price">
+              ${{ product.price }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent activity placeholder -->
+    <section class="activity-section">
+      <h2>Actividad Reciente</h2>
+      <div class="activity-card">
+        <div class="activity-placeholder">
+          <div class="placeholder-icon">📊</div>
+          <h3>Panel de Actividad</h3>
+          <p>Aquí se mostrarán las actividades recientes como nuevos pedidos, productos agregados, etc.</p>
+          <small>Funcionalidad en desarrollo</small>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</div>

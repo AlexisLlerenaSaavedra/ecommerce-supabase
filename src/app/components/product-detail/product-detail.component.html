@@ -1,0 +1,97 @@
+<!-- src/app/components/product-detail/product-detail.component.html -->
+<div class="product-detail-container">
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando producto...</p>
+  </div>
+
+  <!-- Product content -->
+  <div *ngIf="!loading && product" class="product-detail">
+
+    <!-- Back button -->
+    <button class="back-button" (click)="goBack()">
+      ← Volver a productos
+    </button>
+
+    <div class="product-content">
+
+      <!-- Product image -->
+      <div class="image-section">
+        <img [src]="product.image_url" [alt]="product.name" class="main-image">
+      </div>
+
+      <!-- Product info -->
+      <div class="info-section">
+        <h1 class="product-title">{{ product.name }}</h1>
+
+        <div class="price-section">
+          <span class="price">${{ product.price }}</span>
+        </div>
+
+        <div class="description">
+          <h3>Descripción</h3>
+          <p>{{ product.description }}</p>
+        </div>
+
+        <div class="stock-info">
+          <span class="stock" [class.low-stock]="product.stock < 5">
+            Stock disponible: {{ product.stock }} unidades
+          </span>
+        </div>
+
+        <!-- Quantity selector -->
+        <div class="quantity-section">
+          <label>Cantidad:</label>
+          <div class="quantity-controls">
+            <button (click)="decreaseQuantity()"
+                    [disabled]="quantity <= 1"
+                    class="qty-btn">-</button>
+            <span class="quantity-display">{{ quantity }}</span>
+            <button (click)="increaseQuantity()"
+                    [disabled]="quantity >= product.stock"
+                    class="qty-btn">+</button>
+          </div>
+        </div>
+
+        <!-- Add to cart -->
+        <div class="actions">
+          <button
+            class="add-to-cart-btn"
+            [disabled]="product.stock === 0 || addingToCart"
+            (click)="addToCart()">
+            <span *ngIf="!addingToCart">
+              {{ product.stock > 0 ? 'Agregar al carrito' : 'Sin stock' }}
+            </span>
+            <span *ngIf="addingToCart">Agregando...</span>
+          </button>
+        </div>
+
+        <!-- Additional info -->
+        <div class="additional-info">
+          <div class="info-item">
+            <strong>Envío:</strong> Gratis a partir de $50
+          </div>
+          <div class="info-item">
+            <strong>Garantía:</strong> 12 meses
+          </div>
+          <div class="info-item">
+            <strong>Devoluciones:</strong> 30 días
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Product not found -->
+  <div *ngIf="!loading && !product" class="not-found">
+    <h2>Producto no encontrado</h2>
+    <p>El producto que buscas no existe.</p>
+    <button class="back-button" (click)="goBack()">
+      Volver a productos
+    </button>
+  </div>
+
+</div>

@@ -1,0 +1,49 @@
+<!-- src/app/components/product-list/product-list.component.html -->
+<div class="container">
+  <h1>Mi Ecommerce</h1>
+
+  <!-- Filtros -->
+  <app-product-filters (filtersChanged)="onFiltersChanged($event)"></app-product-filters>
+
+  <div *ngIf="loading" class="loading">
+    Cargando productos...
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Contador de resultados -->
+    <div class="results-info">
+      <span class="result-count">{{ resultCount }} producto(s) encontrado(s)</span>
+    </div>
+
+    <!-- No hay resultados -->
+    <div *ngIf="resultCount === 0" class="no-results">
+      <h3>No se encontraron productos</h3>
+      <p>Intenta ajustar los filtros de búsqueda.</p>
+    </div>
+
+    <!-- Grid de productos -->
+    <div class="products-grid" *ngIf="resultCount > 0">
+      <div class="product-card" *ngFor="let product of filteredProducts">
+        <img [src]="product.image_url" [alt]="product.name" class="product-image"
+             (click)="viewProduct(product)">
+        <div class="product-info">
+          <h3 (click)="viewProduct(product)" style="cursor: pointer;">{{ product.name }}</h3>
+          <p class="description">{{ product.description }}</p>
+          <div class="price">${{ product.price }}</div>
+          <div class="stock">Stock: {{ product.stock }}</div>
+          <div class="card-actions">
+            <button class="view-btn" (click)="viewProduct(product)">
+              Ver detalle
+            </button>
+            <button
+              class="add-to-cart-btn"
+              (click)="addToCart(product)"
+              [disabled]="product.stock === 0">
+              {{ product.stock > 0 ? 'Agregar' : 'Sin stock' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

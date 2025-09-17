@@ -1,0 +1,123 @@
+<!-- src/app/pages/about/about.component.html -->
+<div class="about-container">
+
+  <!-- Hero section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Sobre Nosotros</h1>
+      <p class="hero-subtitle">
+        Somos una empresa dedicada a ofrecer productos de calidad con la mejor experiencia de compra online
+      </p>
+    </div>
+  </section>
+
+  <!-- Story section -->
+  <section class="story-section">
+    <div class="container">
+      <div class="story-content">
+        <div class="story-text">
+          <h2>Nuestra Historia</h2>
+          <p>
+            Fundada en 2020, Mi Ecommerce nació con la visión de democratizar el acceso a productos
+            de calidad a través de la tecnología. Lo que comenzó como un pequeño emprendimiento
+            familiar, hoy se ha convertido en una de las plataformas de e-commerce más confiables
+            del país.
+          </p>
+          <p>
+            Nuestro compromiso siempre ha sido simple: ofrecer productos excepcionales,
+            un servicio al cliente inigualable y una experiencia de compra que supere las
+            expectativas de nuestros usuarios.
+          </p>
+          <p>
+            A lo largo de estos años, hemos construido relaciones sólidas con proveedores
+            de confianza y hemos invertido constantemente en tecnología para mejorar
+            nuestra plataforma y brindar la mejor experiencia posible.
+          </p>
+        </div>
+        <div class="story-image">
+          <img src="https://via.placeholder.com/500x400?text=Nuestra+Historia" alt="Nuestra historia">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats section -->
+  <section class="stats-section">
+    <div class="container">
+      <h2>Nuestros Números</h2>
+      <div class="stats-grid">
+        <div class="stat-item" *ngFor="let stat of stats">
+          <div class="stat-number">{{ stat.number }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values section -->
+  <section class="values-section">
+    <div class="container">
+      <h2>Nuestros Valores</h2>
+      <div class="values-grid">
+        <div class="value-item" *ngFor="let value of values">
+          <div class="value-icon">{{ value.icon }}</div>
+          <h3>{{ value.title }}</h3>
+          <p>{{ value.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team section -->
+  <section class="team-section">
+    <div class="container">
+      <h2>Nuestro Equipo</h2>
+      <p class="section-subtitle">
+        Conoce a las personas que hacen posible Mi Ecommerce
+      </p>
+      <div class="team-grid">
+        <div class="team-member" *ngFor="let member of team">
+          <div class="member-image">
+            <img [src]="member.image" [alt]="member.name">
+          </div>
+          <div class="member-info">
+            <h3>{{ member.name }}</h3>
+            <h4>{{ member.position }}</h4>
+            <p>{{ member.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission section -->
+  <section class="mission-section">
+    <div class="container">
+      <div class="mission-content">
+        <div class="mission-item">
+          <h3>Misión</h3>
+          <p>
+            Proporcionar una plataforma de e-commerce que conecte a los consumidores
+            con productos de calidad, ofreciendo una experiencia de compra excepcional,
+            segura y conveniente.
+          </p>
+        </div>
+        <div class="mission-item">
+          <h3>Visión</h3>
+          <p>
+            Ser la plataforma de e-commerce líder en Argentina, reconocida por nuestra
+            innovación, calidad de servicio y compromiso con la satisfacción del cliente.
+          </p>
+        </div>
+        <div class="mission-item">
+          <h3>Compromiso</h3>
+          <p>
+            Mantener los más altos estándares de calidad, transparencia y responsabilidad
+            social, contribuyendo al crecimiento del comercio digital en nuestro país.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

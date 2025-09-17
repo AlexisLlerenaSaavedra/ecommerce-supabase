@@ -1,0 +1,66 @@
+<header class="header">
+  <div class="container">
+    <h1 class="logo" (click)="goToProducts()" style="cursor: pointer;">Mi Ecommerce</h1>
+
+    <div class="header-actions">
+
+      <!-- Cart button -->
+      <button class="cart-button" (click)="goToCart()">
+        🛒 Carrito
+        <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
+      </button>
+
+      <!-- Auth section -->
+      <div class="auth-section" *ngIf="!isAuthLoading">
+
+        <!-- User not logged in -->
+        <div class="auth-buttons" *ngIf="!currentUser">
+          <button class="auth-btn login-btn" (click)="goToLogin()">
+            Iniciar Sesión
+          </button>
+          <button class="auth-btn register-btn" (click)="goToRegister()">
+            Registrarse
+          </button>
+        </div>
+
+        <!-- User logged in -->
+        <div class="user-menu" *ngIf="currentUser">
+          <button class="user-button" (click)="toggleUserMenu()">
+            <span class="user-avatar">{{ currentUser.firstName?.[0] || currentUser.email[0] }}</span>
+            <span class="user-name">{{ currentUser.firstName || 'Usuario' }}</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+
+          <!-- Dropdown menu -->
+          <div class="user-dropdown" *ngIf="showUserMenu" (click)="onDocumentClick()">
+            <div class="user-info">
+              <p class="user-email">{{ currentUser.email }}</p>
+              <p class="user-full-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</p>
+            </div>
+            <hr class="dropdown-divider">
+            <button class="dropdown-item" (click)="router.navigate(['/profile'])">
+              Mi Perfil
+            </button>
+            <button class="dropdown-item" (click)="router.navigate(['/orders'])">
+              Mis Pedidos
+            </button>
+            <button class="dropdown-item" (click)="router.navigate(['/admin'])" *ngIf="isAdmin()">
+              Panel Admin
+            </button>
+            <hr class="dropdown-divider">
+            <button class="dropdown-item logout" (click)="logout()">
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Loading state -->
+      <div class="auth-loading" *ngIf="isAuthLoading">
+        <div class="loading-spinner"></div>
+      </div>
+
+    </div>
+  </div>
+</header>

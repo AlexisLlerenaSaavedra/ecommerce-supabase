@@ -1,0 +1,179 @@
+<!-- src/app/components/order-confirmation/order-confirmation.component.html -->
+<div class="confirmation-container" *ngIf="order">
+
+  <!-- Success header -->
+  <div class="success-header">
+    <div class="success-icon">✅</div>
+    <h1>¡Orden Confirmada!</h1>
+    <p class="success-message">
+      Tu pedido ha sido procesado exitosamente
+    </p>
+  </div>
+
+  <!-- Order summary card -->
+  <div class="order-card">
+
+    <!-- Order header -->
+    <div class="order-header">
+      <div class="order-info">
+        <h2>Orden #{{ order.orderNumber }}</h2>
+        <p class="order-date">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+      <div class="order-status">
+        <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+          {{ getStatusText(order.status) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Customer info -->
+    <div class="info-section">
+      <h3>Información del Cliente</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <strong>Nombre:</strong>
+          <span>{{ order.customer.firstName }} {{ order.customer.lastName }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Email:</strong>
+          <span>{{ order.customer.email }}</span>
+        </div>
+        <div class="info-item">
+          <strong>Teléfono:</strong>
+          <span>{{ order.customer.phone }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shipping info -->
+    <div class="info-section">
+      <h3>Dirección de Envío</h3>
+      <div class="shipping-address">
+        <p>{{ order.shippingAddress.street }}</p>
+        <p>{{ order.shippingAddress.city }}, {{ order.shippingAddress.state }}</p>
+        <p>{{ order.shippingAddress.zipCode }}</p>
+        <p>{{ order.shippingAddress.country }}</p>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="info-section">
+      <h3>Productos Ordenados</h3>
+      <div class="products-list">
+        <div class="product-item" *ngFor="let item of order.items">
+          <img [src]="item.imageUrl" [alt]="item.productName" class="product-image">
+          <div class="product-details">
+            <h4>{{ item.productName }}</h4>
+            <p class="product-quantity">Cantidad: {{ item.quantity }}</p>
+            <p class="product-price">${{ item.price }} c/u</p>
+          </div>
+          <div class="product-total">
+            ${{ (item.price * item.quantity).toFixed(2) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order totals -->
+    <div class="totals-section">
+      <div class="totals-grid">
+        <div class="total-row">
+          <span>Subtotal:</span>
+          <span>${{ order.subtotal.toFixed(2) }}</span>
+        </div>
+        <div class="total-row">
+          <span>Envío:</span>
+          <span *ngIf="order.shipping === 0" class="free-shipping">Gratis</span>
+          <span *ngIf="order.shipping > 0">${{ order.shipping.toFixed(2) }}</span>
+        </div>
+        <div class="total-row">
+          <span>Impuestos:</span>
+          <span>${{ order.tax.toFixed(2) }}</span>
+        </div>
+        <div class="total-row final-total">
+          <span><strong>Total:</strong></span>
+          <span><strong>${{ order.total.toFixed(2) }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Delivery info -->
+  <div class="delivery-info">
+    <div class="delivery-icon">🚚</div>
+    <div class="delivery-details">
+      <h3>Información de Entrega</h3>
+      <p><strong>Fecha estimada:</strong> {{ estimatedDelivery | date:'dd/MM/yyyy' }}</p>
+      <p>Recibirás un email con el código de seguimiento una vez que tu pedido sea despachado.</p>
+    </div>
+  </div>
+
+  <!-- Next steps -->
+  <div class="next-steps">
+    <h3>¿Qué sigue?</h3>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>Confirmación por Email</h4>
+          <p>Te enviaremos un email de confirmación con todos los detalles</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>Preparación</h4>
+          <p>Preparamos tu pedido en nuestro almacén</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h4>Envío</h4>
+          <p>Tu pedido será despachado y recibirás el código de seguimiento</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h4>Entrega</h4>
+          <p>Recibes tu pedido en la dirección indicada</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-buttons">
+    <button class="btn btn-outline" (click)="downloadInvoice()">
+      📄 Descargar Factura
+    </button>
+    <button class="btn btn-outline" (click)="viewOrderDetails()">
+      👁️ Ver Detalles
+    </button>
+    <button class="btn btn-primary" (click)="continueShopping()">
+      🛍️ Seguir Comprando
+    </button>
+  </div>
+
+  <!-- Support info -->
+  <div class="support-info">
+    <p>¿Necesitas ayuda? Contáctanos:</p>
+    <div class="contact-methods">
+      <span>📧 soporte@miecommerce.com</span>
+      <span>📞 +54 11 1234-5678</span>
+      <span>💬 Chat en vivo</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Fallback if no order -->
+<div class="no-order" *ngIf="!order">
+  <h2>No se encontró información de la orden</h2>
+  <p>Parece que llegaste aquí por error.</p>
+  <button class="btn btn-primary" (click)="continueShopping()">
+    Ir a la tienda
+  </button>
+</div>

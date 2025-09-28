@@ -13,6 +13,7 @@ import { PrivacyPolicyComponent } from './pages/privacy-policy/privacy-policy.co
 import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard.component';
 import { AdminProductsComponent } from './admin/admin-products/admin-products.component';
 import { adminGuard } from './guards/admin-guard';
+import { AdminCategoriesComponent } from './admin/admin-categories/admin-categories.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/productos', pathMatch: 'full' },
@@ -35,6 +36,11 @@ export const routes: Routes = [
   {
     path: 'admin/products',
     component: AdminProductsComponent,
+    canActivate: [adminGuard]
+  },
+  {
+    path: 'admin/categories',
+    component: AdminCategoriesComponent,
     canActivate: [adminGuard]
   },
   { path: '**', redirectTo: '/productos' }

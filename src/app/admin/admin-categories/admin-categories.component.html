@@ -1,0 +1,136 @@
+<!-- src/app/admin/admin-categories/admin-categories.component.html -->
+<div class="admin-categories">
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-btn" (click)="goBackToDashboard()">← Volver al Dashboard</button>
+        <h1>Gestión de Categorías</h1>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          + Crear Categoría
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <div class="message success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="message error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <p>Cargando categorías...</p>
+  </div>
+
+  <!-- Categories table -->
+  <div class="categories-container" *ngIf="!isLoading">
+    <div class="table-wrapper">
+      <table class="categories-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Productos</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let category of categories">
+            <td>
+              <div class="category-info">
+                <h3>{{ category.name }}</h3>
+              </div>
+            </td>
+            <td>
+              <span class="product-count" [class.has-products]="getProductCount(category.id) > 0">
+                {{ getProductCount(category.id) }} productos
+              </span>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="btn-action edit" (click)="openEditModal(category)" title="Editar">
+                  ✏️
+                </button>
+                <button
+                  class="btn-action delete"
+                  (click)="deleteCategory(category)"
+                  [disabled]="getProductCount(category.id) > 0"
+                  [title]="getProductCount(category.id) > 0 ? 'No se puede eliminar: tiene productos asociados' : 'Eliminar'">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty state -->
+      <div class="empty-state" *ngIf="categories.length === 0">
+        <div class="empty-icon">🗂️</div>
+        <h3>No hay categorías</h3>
+        <p>Comienza creando tu primera categoría para organizar tus productos</p>
+        <button class="btn btn-primary" (click)="openCreateModal()">
+          Crear Primera Categoría
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for create/edit category -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>{{ isEditing ? 'Editar Categoría' : 'Crear Nueva Categoría' }}</h2>
+        <button class="close-btn" (click)="closeModal()">×</button>
+      </div>
+
+      <form (ngSubmit)="saveCategory()" class="category-form">
+
+        <!-- Form errors -->
+        <div class="form-errors" *ngIf="formErrors.length > 0">
+          <div class="error-message" *ngFor="let error of formErrors">
+            {{ error }}
+          </div>
+        </div>
+
+        <!-- Category name -->
+        <div class="form-group">
+          <label for="name">Nombre de la Categoría *</label>
+          <input
+            type="text"
+            id="name"
+            [(ngModel)]="categoryForm.name"
+            name="name"
+            class="form-input"
+            placeholder="Ingresa el nombre de la categoría"
+            required>
+        </div>
+
+        <!-- Modal actions -->
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+            <span *ngIf="!isSubmitting">
+              {{ isEditing ? 'Actualizar Categoría' : 'Crear Categoría' }}
+            </span>
+            <span *ngIf="isSubmitting">
+              {{ isEditing ? 'Actualizando...' : 'Creando...' }}
+            </span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>

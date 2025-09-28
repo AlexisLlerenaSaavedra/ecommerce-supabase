@@ -1,6 +1,6 @@
 // src/app/services/admin.service.ts
 import { Injectable } from '@angular/core';
-import { SupabaseService, Product, Category } from './supabase.service';
+import { SupabaseService, Product } from './supabase.service';
 import { AuthService } from './auth.service';
 
 export interface ProductForm {
@@ -10,6 +10,10 @@ export interface ProductForm {
   image_url: string;
   category_id: number;
   stock: number;
+}
+
+export interface CategoryForm {
+  name: string;
 }
 
 @Injectable({
@@ -81,11 +85,11 @@ export class AdminService {
   }
 
   // CRUD de Categorías
-  async createCategory(name: string): Promise<{ success: boolean; error?: string }> {
+  async createCategory(CategoryData: CategoryForm): Promise<{ success: boolean; error?: string }> {
     try {
       const { data, error } = await this.supabaseService.client
         .from('categories')
-        .insert([{ name }])
+        .insert([CategoryData])
         .select();
 
       if (error) throw error;
@@ -96,11 +100,11 @@ export class AdminService {
     }
   }
 
-  async updateCategory(id: number, name: string): Promise<{ success: boolean; error?: string }> {
+  async updateCategory(id: number, CategoryData: CategoryForm): Promise<{ success: boolean; error?: string }> {
     try {
       const { data, error } = await this.supabaseService.client
         .from('categories')
-        .update({ name })
+        .update(CategoryData)
         .eq('id', id);
 
       if (error) throw error;

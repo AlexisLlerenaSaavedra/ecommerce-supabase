@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { CartService, CartItem } from './cart.service';
+import { AuthService } from './auth.service';
 import { Order, Customer, ShippingAddress, OrderItem } from '../models/order.models';
 
 @Injectable({
@@ -11,7 +12,8 @@ export class OrderService {
 
   constructor(
     private supabaseService: SupabaseService,
-    private cartService: CartService
+    private cartService: CartService,
+    private authService: AuthService
   ) { }
 
   generateOrderNumber(): string {
@@ -29,7 +31,8 @@ export class OrderService {
       'AR': 15.00,
       'US': 25.00,
       'BR': 20.00,
-      'UY': 18.00
+      'UY': 18.00,
+      'CL': 20.00
     };
 
     return shippingRates[country] || 30.00;
@@ -81,20 +84,218 @@ export class OrderService {
 
   async saveOrder(order: Order): Promise<boolean> {
     try {
-      // En una implementación real, guardarías en Supabase
-      // Por ahora solo simulamos el guardado
-      console.log('Guardando orden:', order);
+      const currentUser = this.authService.getCurrentUser();
 
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // 1. Insertar la orden principal
+      const { data: orderData, error: orderError } = await this.supabaseService.client
+        .from('orders')
+        .insert([{
+          order_number: order.orderNumber,
+          user_id: currentUser?.id || null,
 
-      // Limpiar carrito después de confirmar orden
+          // Información del cliente
+          customer_first_name: order.customer.firstName,
+          customer_last_name: order.customer.lastName,
+          customer_email: order.customer.email,
+          customer_phone: order.customer.phone,
+
+          // Dirección de envío
+          shipping_street: order.shippingAddress.street,
+          shipping_city: order.shippingAddress.city,
+          shipping_state: order.shippingAddress.state,
+          shipping_zip_code: order.shippingAddress.zipCode,
+          shipping_country: order.shippingAddress.country,
+
+          // Totales
+          subtotal: order.subtotal,
+          shipping: order.shipping,
+          tax: order.tax,
+          total: order.total,
+
+          status: order.status
+        }])
+        .select()
+        .single();
+
+      if (orderError) {
+        console.error('Error insertando orden:', orderError);
+        throw orderError;
+      }
+
+      console.log('Orden creada:', orderData);
+
+      // 2. Insertar los items de la orden
+      const orderItems = order.items.map(item => ({
+        order_id: orderData.id,
+        product_id: item.productId,
+        product_name: item.productName,
+        price: item.price,
+        quantity: item.quantity,
+        image_url: item.imageUrl
+      }));
+
+      const { data: itemsData, error: itemsError } = await this.supabaseService.client
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) {
+        console.error('Error insertando items de orden:', itemsError);
+        throw itemsError;
+      }
+
+      console.log('Items de orden creados:', itemsData);
+
+      // 3. Actualizar stock de productos (opcional pero recomendado)
+      for (const item of order.items) {
+        await this.updateProductStock(item.productId, item.quantity);
+      }
+
+      // 4. Limpiar carrito después de confirmar orden
       this.cartService.clearCart();
+
+      // 5. Guardar ID de orden en la orden para referencia futura
+      order.id = orderData.id;
 
       return true;
     } catch (error) {
       console.error('Error guardando orden:', error);
       return false;
+    }
+  }
+
+  // Método auxiliar para actualizar el stock
+  private async updateProductStock(productId: number, quantitySold: number): Promise<void> {
+    try {
+      // Obtener stock actual
+      const { data: product, error: fetchError } = await this.supabaseService.client
+        .from('products')
+        .select('stock')
+        .eq('id', productId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error obteniendo producto:', fetchError);
+        return;
+      }
+
+      // Calcular nuevo stock
+      const newStock = product.stock - quantitySold;
+
+      // Actualizar stock
+      const { error: updateError } = await this.supabaseService.client
+        .from('products')
+        .update({ stock: newStock })
+        .eq('id', productId);
+
+      if (updateError) {
+        console.error('Error actualizando stock:', updateError);
+      } else {
+        console.log(`Stock actualizado para producto ${productId}: ${newStock}`);
+      }
+    } catch (error) {
+      console.error('Error en updateProductStock:', error);
+    }
+  }
+
+  // Método para obtener órdenes de un usuario
+  async getUserOrders(userId: string): Promise<Order[]> {
+    try {
+      const { data: orders, error } = await this.supabaseService.client
+        .from('orders')
+        .select(`
+          *,
+          order_items (*)
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Transformar datos de BD al formato Order
+      return orders.map(order => ({
+        id: order.id,
+        orderNumber: order.order_number,
+        customer: {
+          firstName: order.customer_first_name,
+          lastName: order.customer_last_name,
+          email: order.customer_email,
+          phone: order.customer_phone
+        },
+        shippingAddress: {
+          street: order.shipping_street,
+          city: order.shipping_city,
+          state: order.shipping_state,
+          zipCode: order.shipping_zip_code,
+          country: order.shipping_country
+        },
+        items: order.order_items.map((item: any) => ({
+          productId: item.product_id,
+          productName: item.product_name,
+          price: item.price,
+          quantity: item.quantity,
+          imageUrl: item.image_url
+        })),
+        subtotal: order.subtotal,
+        shipping: order.shipping,
+        tax: order.tax,
+        total: order.total,
+        status: order.status,
+        createdAt: new Date(order.created_at)
+      }));
+    } catch (error) {
+      console.error('Error obteniendo órdenes:', error);
+      return [];
+    }
+  }
+
+  // Método para obtener una orden específica por número
+  async getOrderByNumber(orderNumber: string): Promise<Order | null> {
+    try {
+      const { data, error } = await this.supabaseService.client
+        .from('orders')
+        .select(`
+          *,
+          order_items (*)
+        `)
+        .eq('order_number', orderNumber)
+        .single();
+
+      if (error) throw error;
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        orderNumber: data.order_number,
+        customer: {
+          firstName: data.customer_first_name,
+          lastName: data.customer_last_name,
+          email: data.customer_email,
+          phone: data.customer_phone
+        },
+        shippingAddress: {
+          street: data.shipping_street,
+          city: data.shipping_city,
+          state: data.shipping_state,
+          zipCode: data.shipping_zip_code,
+          country: data.shipping_country
+        },
+        items: data.order_items.map((item: any) => ({
+          productId: item.product_id,
+          productName: item.product_name,
+          price: item.price,
+          quantity: item.quantity,
+          imageUrl: item.image_url
+        })),
+        subtotal: data.subtotal,
+        shipping: data.shipping,
+        tax: data.tax,
+        total: data.total,
+        status: data.status,
+        createdAt: new Date(data.created_at)
+      };
+    } catch (error) {
+      console.error('Error obteniendo orden:', error);
+      return null;
     }
   }
 

@@ -24,7 +24,7 @@
         [(ngModel)]="selectedCategory"
         (change)="onCategoryChange()"
         class="filter-select">
-        <option [value]="null">Todas las categorías</option>
+        <option [ngValue]="null">Todas las categorías</option>
         <option *ngFor="let category of categories" [value]="category.id">
           {{ category.name }}
         </option>

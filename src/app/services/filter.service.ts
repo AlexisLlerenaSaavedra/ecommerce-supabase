@@ -27,7 +27,17 @@ export class FilterService {
 
   updateFilters(newFilters: Partial<FilterOptions>) {
     const currentFilters = this.filtersSubject.value;
-    this.filtersSubject.next({ ...currentFilters, ...newFilters });
+    const merged: FilterOptions = { ...currentFilters, ...newFilters } as FilterOptions;
+
+    // Normalizar categoryId (puede venir como string desde el <select>)
+    if ('categoryId' in newFilters) {
+      const v = (newFilters as any).categoryId;
+      merged.categoryId = (v === null || v === undefined || v === '')
+        ? null
+        : Number(v);
+    }
+
+    this.filtersSubject.next(merged);
   }
 
   resetFilters() {
@@ -53,9 +63,10 @@ export class FilterService {
     }
 
     // Filtrar por categoría
-    if (filters.categoryId) {
+    if (filters.categoryId !== null ) {
+      const catId = Number(filters.categoryId);
       filtered = filtered.filter(product =>
-        product.category_id === filters.categoryId
+        Number((product as any).category_id) === catId
       );
     }
 

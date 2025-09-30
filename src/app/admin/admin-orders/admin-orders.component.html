@@ -1,0 +1,331 @@
+<!-- src/app/admin/admin-orders/admin-orders.component.html -->
+<div class="admin-orders">
+
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-btn" (click)="goBackToDashboard()">← Volver al Dashboard</button>
+        <h1>Gestión de Órdenes</h1>
+      </div>
+      <div class="header-right">
+        <button class="btn btn-secondary" (click)="downloadOrderReport()">
+          📊 Descargar Reporte
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <div class="message success" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+  <div class="message error" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Statistics -->
+  <section class="stats-section">
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-content">
+        <h3>{{ filteredOrders.length }}</h3>
+        <p>Total Órdenes</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <h3>{{ getOrdersByStatus('pending') }}</h3>
+        <p>Pendientes</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🚚</div>
+      <div class="stat-content">
+        <h3>{{ getOrdersByStatus('shipped') }}</h3>
+        <p>Enviadas</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content">
+        <h3>${{ getTotalRevenue().toFixed(2) }}</h3>
+        <p>Ingresos Totales</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="filters-section">
+    <div class="filters-grid">
+
+      <div class="filter-group">
+        <label>Estado:</label>
+        <select [(ngModel)]="selectedStatus" (change)="onFilterChange()" class="filter-select">
+          <option value="all">Todos</option>
+          <option value="pending">Pendientes</option>
+          <option value="confirmed">Confirmados</option>
+          <option value="shipped">Enviados</option>
+          <option value="delivered">Entregados</option>
+          <option value="cancelled">Cancelados</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Buscar:</label>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onFilterChange()"
+          placeholder="Orden, email, cliente..."
+          class="filter-input">
+      </div>
+
+      <div class="filter-group">
+        <label>Desde:</label>
+        <input
+          type="date"
+          [(ngModel)]="dateFrom"
+          (change)="onFilterChange()"
+          class="filter-input">
+      </div>
+
+      <div class="filter-group">
+        <label>Hasta:</label>
+        <input
+          type="date"
+          [(ngModel)]="dateTo"
+          (change)="onFilterChange()"
+          class="filter-input">
+      </div>
+
+      <div class="filter-group">
+        <button class="btn btn-outline" (click)="clearFilters()">
+          Limpiar Filtros
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <p>Cargando órdenes...</p>
+  </div>
+
+  <!-- Orders table -->
+  <div class="orders-container" *ngIf="!isLoading">
+    <div class="table-wrapper">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Orden</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of filteredOrders">
+            <td>
+              <div class="order-number">
+                <strong>{{ order.orderNumber }}</strong>
+              </div>
+            </td>
+            <td>
+              <div class="customer-info">
+                <strong>{{ order.customer.firstName }} {{ order.customer.lastName }}</strong>
+                <p>{{ order.customer.email }}</p>
+              </div>
+            </td>
+            <td>
+              <span class="order-date">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </td>
+            <td>
+              <span class="items-count">{{ order.items.length }} producto(s)</span>
+            </td>
+            <td>
+              <span class="order-total">${{ order.total.toFixed(2) }}</span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+                {{ getStatusText(order.status) }}
+              </span>
+            </td>
+            <td>
+              <div class="actions">
+                <button class="btn-action view" (click)="viewOrderDetail(order)" title="Ver detalles">
+                  👁️
+                </button>
+                <button class="btn-action edit" (click)="openStatusModal(order)" title="Cambiar estado">
+                  ✏️
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty state -->
+      <div class="empty-state" *ngIf="filteredOrders.length === 0">
+        <div class="empty-icon">📦</div>
+        <h3>No hay órdenes</h3>
+        <p>No se encontraron órdenes con los filtros seleccionados</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-overlay" *ngIf="showOrderDetail && selectedOrder" (click)="closeOrderDetail()">
+    <div class="modal-content order-detail-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>Detalles de la Orden</h2>
+        <button class="close-btn" (click)="closeOrderDetail()">×</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Order info -->
+        <div class="detail-section">
+          <h3>Información de la Orden</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>Número de orden:</strong>
+              <span>{{ selectedOrder.orderNumber }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Fecha:</strong>
+              <span>{{ selectedOrder.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Estado:</strong>
+              <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.status)">
+                {{ getStatusText(selectedOrder.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer info -->
+        <div class="detail-section">
+          <h3>Información del Cliente</h3>
+          <p>{{ selectedOrder.customer.firstName }} {{ selectedOrder.customer.lastName }}</p>
+          <p>{{ selectedOrder.customer.email }}</p>
+          <p>{{ selectedOrder.customer.phone }}</p>
+        </div>
+
+        <!-- Shipping address -->
+        <div class="detail-section">
+          <h3>Dirección de Envío</h3>
+          <p>{{ selectedOrder.shippingAddress.street }}</p>
+          <p>{{ selectedOrder.shippingAddress.city }}, {{ selectedOrder.shippingAddress.state }}</p>
+          <p>{{ selectedOrder.shippingAddress.zipCode }}</p>
+          <p>{{ selectedOrder.shippingAddress.country }}</p>
+        </div>
+
+        <!-- Products -->
+        <div class="detail-section">
+          <h3>Productos</h3>
+          <div class="products-detail-list">
+            <div class="product-detail-item" *ngFor="let item of selectedOrder.items">
+              <img [src]="item.imageUrl" [alt]="item.productName" class="product-image">
+              <div class="product-details">
+                <h4>{{ item.productName }}</h4>
+                <p>Cantidad: {{ item.quantity }}</p>
+                <p class="product-price">${{ item.price }} c/u</p>
+              </div>
+              <div class="product-total">
+                ${{ (item.price * item.quantity).toFixed(2) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="detail-section">
+          <h3>Resumen de Pago</h3>
+          <div class="totals-grid">
+            <div class="total-row">
+              <span>Subtotal:</span>
+              <span>${{ selectedOrder.subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="total-row">
+              <span>Envío:</span>
+              <span *ngIf="selectedOrder.shipping === 0" class="free-shipping">Gratis</span>
+              <span *ngIf="selectedOrder.shipping > 0">${{ selectedOrder.shipping.toFixed(2) }}</span>
+            </div>
+            <div class="total-row">
+              <span>Impuestos:</span>
+              <span>${{ selectedOrder.tax.toFixed(2) }}</span>
+            </div>
+            <div class="total-row final-total">
+              <span><strong>Total:</strong></span>
+              <span><strong>${{ selectedOrder.total.toFixed(2) }}</strong></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeOrderDetail()">
+          Cerrar
+        </button>
+        <button class="btn btn-primary" (click)="openStatusModal(selectedOrder); closeOrderDetail()">
+          Cambiar Estado
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Status Change Modal -->
+  <div class="modal-overlay" *ngIf="showStatusModal && orderToUpdate" (click)="closeStatusModal()">
+    <div class="modal-content status-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>Cambiar Estado de Orden</h2>
+        <button class="close-btn" (click)="closeStatusModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <p><strong>Orden:</strong> {{ orderToUpdate.orderNumber }}</p>
+        <p><strong>Cliente:</strong> {{ orderToUpdate.customer.firstName }} {{ orderToUpdate.customer.lastName }}</p>
+        <p><strong>Estado actual:</strong>
+          <span class="status-badge" [ngClass]="getStatusClass(orderToUpdate.status)">
+            {{ getStatusText(orderToUpdate.status) }}
+          </span>
+        </p>
+
+        <div class="form-group">
+          <label for="newStatus">Nuevo Estado:</label>
+          <select id="newStatus" [(ngModel)]="newStatus" class="form-select">
+            <option *ngFor="let status of statusOptions" [value]="status.value">
+              {{ status.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeStatusModal()">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" (click)="updateOrderStatus()">
+          Actualizar Estado
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

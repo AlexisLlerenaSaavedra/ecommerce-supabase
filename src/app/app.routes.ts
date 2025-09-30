@@ -14,6 +14,8 @@ import { AdminDashboardComponent } from './admin/admin-dashboard/admin-dashboard
 import { AdminProductsComponent } from './admin/admin-products/admin-products.component';
 import { adminGuard } from './guards/admin-guard';
 import { AdminCategoriesComponent } from './admin/admin-categories/admin-categories.component';
+import { MyOrdersComponent } from './components/my-orders/my-orders.component';
+import { AdminOrdersComponent } from './admin/admin-orders/admin-orders.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/productos', pathMatch: 'full' },
@@ -24,6 +26,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'order-confirmation', component: OrderConfirmationComponent },
+  { path: 'mis-ordenes', component: MyOrdersComponent },
   { path: 'about', component: AboutComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'terms-of-service', component: TermsOfServiceComponent },
@@ -41,6 +44,11 @@ export const routes: Routes = [
   {
     path: 'admin/categories',
     component: AdminCategoriesComponent,
+    canActivate: [adminGuard]
+  },
+  {
+    path: 'admin/orders',
+    component: AdminOrdersComponent,
     canActivate: [adminGuard]
   },
   { path: '**', redirectTo: '/productos' }

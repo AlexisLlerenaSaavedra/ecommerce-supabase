@@ -1,0 +1,208 @@
+<!-- src/app/components/my-orders/my-orders.component.html -->
+<div class="my-orders-container">
+
+  <!-- Header -->
+  <div class="orders-header">
+    <h1>Mis Órdenes</h1>
+    <button class="btn btn-outline" (click)="continueShopping()">
+      🛍️ Seguir Comprando
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner"></div>
+    <p>Cargando tus órdenes...</p>
+  </div>
+
+  <!-- Error message -->
+  <div class="error-message" *ngIf="errorMessage && !isLoading">
+    <p>{{ errorMessage }}</p>
+    <button class="btn btn-primary" (click)="ngOnInit()">Reintentar</button>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && orders.length === 0 && !errorMessage">
+    <div class="empty-icon">📦</div>
+    <h2>No tienes órdenes aún</h2>
+    <p>Cuando realices una compra, aparecerá aquí tu historial.</p>
+    <button class="btn btn-primary" (click)="continueShopping()">
+      Comenzar a Comprar
+    </button>
+  </div>
+
+  <!-- Orders list -->
+  <div class="orders-list" *ngIf="!isLoading && orders.length > 0">
+    <div class="order-card" *ngFor="let order of orders">
+
+      <!-- Order header -->
+      <div class="order-header">
+        <div class="order-info">
+          <h3>Orden {{ order.orderNumber }}</h3>
+          <p class="order-date">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+          {{ getStatusText(order.status) }}
+        </span>
+      </div>
+
+      <!-- Order items preview -->
+      <div class="order-items-preview">
+        <div class="item-preview" *ngFor="let item of order.items">
+          <img [src]="item.imageUrl" [alt]="item.productName" class="item-image">
+          <div class="item-info">
+            <h4>{{ item.productName }}</h4>
+            <p>Cantidad: {{ item.quantity }} x ${{ item.price }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order summary -->
+      <div class="order-summary">
+        <div class="summary-row">
+          <span>Total de productos:</span>
+          <span>{{ order.items.length }} producto(s)</span>
+        </div>
+        <div class="summary-row">
+          <span>Envío:</span>
+          <span *ngIf="order.shipping === 0" class="free-shipping">Gratis</span>
+          <span *ngIf="order.shipping > 0">${{ order.shipping.toFixed(2) }}</span>
+        </div>
+        <div class="summary-row total">
+          <span><strong>Total:</strong></span>
+          <span><strong>${{ order.total.toFixed(2) }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Order delivery info -->
+      <div class="delivery-info" *ngIf="order.status !== 'cancelled'">
+        <div class="delivery-icon">🚚</div>
+        <div class="delivery-text">
+          <span *ngIf="order.status === 'delivered'">
+            <strong>Entregado</strong>
+          </span>
+          <span *ngIf="order.status !== 'delivered'">
+            <strong>Entrega estimada:</strong> {{ getEstimatedDelivery(order.createdAt, order.status) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Order actions -->
+      <div class="order-actions">
+        <button class="btn btn-outline" (click)="viewOrderDetail(order)">
+          Ver Detalles
+        </button>
+        <button class="btn btn-outline" (click)="downloadInvoice(order)">
+          📄 Descargar Factura
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Order detail modal -->
+  <div class="modal-overlay" *ngIf="showOrderDetail && selectedOrder" (click)="closeOrderDetail()">
+    <div class="modal-content order-detail-modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h2>Detalles de la Orden</h2>
+        <button class="close-btn" (click)="closeOrderDetail()">×</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Order info -->
+        <div class="detail-section">
+          <h3>Información de la Orden</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <strong>Número de orden:</strong>
+              <span>{{ selectedOrder.orderNumber }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Fecha:</strong>
+              <span>{{ selectedOrder.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-item">
+              <strong>Estado:</strong>
+              <span class="status-badge" [ngClass]="getStatusClass(selectedOrder.status)">
+                {{ getStatusText(selectedOrder.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer info -->
+        <div class="detail-section">
+          <h3>Información del Cliente</h3>
+          <p>{{ selectedOrder.customer.firstName }} {{ selectedOrder.customer.lastName }}</p>
+          <p>{{ selectedOrder.customer.email }}</p>
+          <p>{{ selectedOrder.customer.phone }}</p>
+        </div>
+
+        <!-- Shipping address -->
+        <div class="detail-section">
+          <h3>Dirección de Envío</h3>
+          <p>{{ selectedOrder.shippingAddress.street }}</p>
+          <p>{{ selectedOrder.shippingAddress.city }}, {{ selectedOrder.shippingAddress.state }}</p>
+          <p>{{ selectedOrder.shippingAddress.zipCode }}</p>
+          <p>{{ selectedOrder.shippingAddress.country }}</p>
+        </div>
+
+        <!-- Products -->
+        <div class="detail-section">
+          <h3>Productos</h3>
+          <div class="products-detail-list">
+            <div class="product-detail-item" *ngFor="let item of selectedOrder.items">
+              <img [src]="item.imageUrl" [alt]="item.productName" class="product-image">
+              <div class="product-details">
+                <h4>{{ item.productName }}</h4>
+                <p>Cantidad: {{ item.quantity }}</p>
+                <p class="product-price">${{ item.price }} c/u</p>
+              </div>
+              <div class="product-total">
+                ${{ (item.price * item.quantity).toFixed(2) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="detail-section">
+          <h3>Resumen de Pago</h3>
+          <div class="totals-grid">
+            <div class="total-row">
+              <span>Subtotal:</span>
+              <span>${{ selectedOrder.subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="total-row">
+              <span>Envío:</span>
+              <span *ngIf="selectedOrder.shipping === 0" class="free-shipping">Gratis</span>
+              <span *ngIf="selectedOrder.shipping > 0">${{ selectedOrder.shipping.toFixed(2) }}</span>
+            </div>
+            <div class="total-row">
+              <span>Impuestos:</span>
+              <span>${{ selectedOrder.tax.toFixed(2) }}</span>
+            </div>
+            <div class="total-row final-total">
+              <span><strong>Total:</strong></span>
+              <span><strong>${{ selectedOrder.total.toFixed(2) }}</strong></span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeOrderDetail()">
+          Cerrar
+        </button>
+        <button class="btn btn-primary" (click)="downloadInvoice(selectedOrder)">
+          📄 Descargar Factura
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

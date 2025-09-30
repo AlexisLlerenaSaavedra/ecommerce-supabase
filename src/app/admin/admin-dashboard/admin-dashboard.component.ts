@@ -63,8 +63,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   navigateToOrders() {
-    // Funcionalidad futura
-    alert('Gestión de órdenes - próximamente');
+    this.router.navigate(['/admin/orders']);
   }
 
   navigateToUsers() {
